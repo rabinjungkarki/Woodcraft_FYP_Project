@@ -13,31 +13,49 @@ class PaymentController extends Controller
     {
         abort_if($order->user_id !== auth()->id(), 403);
 
-        return inertia('shop/payment-khalti', ['order' => $order]);
+        // Initiate Khalti ePay (v2)
+        $response = Http::withHeaders([
+            'Authorization' => 'Key ' . config('services.khalti.secret'),
+        ])->post('https://a.khalti.com/api/v2/epayment/initiate/', [
+            'return_url'       => route('payment.khalti.verify', $order->id),
+            'website_url'      => config('app.url'),
+            'amount'           => (int) ($order->total * 100), // paisa
+            'purchase_order_id'=> (string) $order->id,
+            'purchase_order_name' => 'Wood Kala Order #' . $order->id,
+        ]);
+
+        if ($response->successful()) {
+            return redirect($response->json('payment_url'));
+        }
+
+        return back()->with('error', 'Could not initiate Khalti payment. Please try again.');
     }
 
     public function khaltiVerify(Request $request, Order $order)
     {
         abort_if($order->user_id !== auth()->id(), 403);
 
-        $request->validate(['token' => 'required|string', 'amount' => 'required|integer']);
+        $pidx = $request->query('pidx');
+
+        if (!$pidx) {
+            return redirect()->route('orders.show', $order->id)->with('error', 'Payment cancelled.');
+        }
 
         $response = Http::withHeaders([
             'Authorization' => 'Key ' . config('services.khalti.secret'),
-        ])->post('https://khalti.com/api/v2/payment/verify/', [
-            'token'  => $request->token,
-            'amount' => $request->amount,
+        ])->post('https://a.khalti.com/api/v2/epayment/lookup/', [
+            'pidx' => $pidx,
         ]);
 
-        if ($response->successful()) {
+        if ($response->successful() && $response->json('status') === 'Completed') {
             $order->update([
                 'payment_status' => 'paid',
-                'payment_ref'    => $request->token,
+                'payment_ref'    => $pidx,
                 'status'         => 'processing',
             ]);
-            return redirect()->route('orders.show', $order->id)->with('success', 'Payment successful!');
+            return redirect()->route('orders.show', $order->id)->with('success', 'Payment successful! 🎉');
         }
 
-        return back()->withErrors(['payment' => 'Payment verification failed.']);
+        return redirect()->route('orders.show', $order->id)->with('error', 'Payment verification failed.');
     }
 }

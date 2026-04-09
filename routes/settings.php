@@ -20,5 +20,29 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->middleware('throttle:6,1')
         ->name('user-password.update');
 
+    Route::put('settings/set-password', function (\Illuminate\Http\Request $request) {
+        $request->validate([
+            'password' => 'required|string|min:8|confirmed',
+        ]);
+        $request->user()->update([
+            'password'       => bcrypt($request->password),
+            'is_google_user' => false,
+        ]);
+        return back()->with('success', 'Password set successfully.');
+    })->middleware('throttle:6,1')->name('user-password.set');
+
     Route::inertia('settings/appearance', 'settings/appearance')->name('appearance.edit');
+    Route::inertia('settings/notifications', 'settings/notifications')->name('notifications.edit');
+    Route::inertia('settings/addresses', 'settings/addresses')->name('addresses.edit');
+    Route::get('settings/analytics', function () {
+        $user = auth()->user();
+        return inertia('settings/analytics', [
+            'analytics' => [
+                'total_orders'   => $user->orders()->count(),
+                'wishlist_items' => $user->wishlist()->count(),
+                'total_spent'    => $user->orders()->whereNotIn('status', ['cancelled'])->sum('total'),
+                'delivered'      => $user->orders()->where('status', 'delivered')->count(),
+            ],
+        ]);
+    })->name('analytics.edit');
 });

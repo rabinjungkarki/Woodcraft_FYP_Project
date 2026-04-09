@@ -1,221 +1,292 @@
-import { Head, Link, router } from '@inertiajs/react';
-import { useState, useEffect } from 'react';
-import { ArrowRight, Star, ShoppingBag, Shield, Truck, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Head, Link } from '@inertiajs/react';
+import { motion, useScroll, useTransform } from 'motion/react';
+import { useRef } from 'react';
+import { ArrowRight, Ruler, Leaf, Hammer, Wrench } from 'lucide-react';
 import ShopLayout from '@/components/shop-layout';
 import { imgSrc } from '@/lib/img';
+import { useScrollReveal } from '@/hooks/use-scroll-reveal';
 
 interface Category { id: number; name: string; slug: string; products_count: number; }
-interface Product { id: number; name: string; slug: string; price: number; images: string[] | null; category: { name: string }; }
+interface Product  { id: number; name: string; slug: string; price: number; images: string[] | null; category: { name: string }; }
 
-const CATEGORY_ICONS: Record<string, string> = {
-    chairs: '🪑', tables: '🪞', beds: '🛏️', sofas: '🛋️', decor: '🏺', default: '🪵',
+const CAT_IMAGES: Record<string, string> = {
+    chairs:      'https://images.unsplash.com/photo-1567538096630-e0c55bd6374c?w=600&q=85',
+    tables:      'https://images.unsplash.com/photo-1538688525198-9b88f6f53126?w=600&q=85',
+    beds:        'https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?w=600&q=85',
+    sofas:       'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=600&q=85',
+    decor:       'https://images.unsplash.com/photo-1493663284031-b7e3aefcae8e?w=600&q=85',
+    'living-room':'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=800&q=85',
+    bedroom:     'https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?w=800&q=85',
+    office:      'https://images.unsplash.com/photo-1524758631624-e2822e304c36?w=800&q=85',
+    default:     'https://images.unsplash.com/photo-1524758631624-e2822e304c36?w=600&q=85',
 };
 
-const TESTIMONIALS = [
-    { name: 'Sita Sharma', location: 'Kathmandu', rating: 5, text: 'Absolutely love my new dining table. The craftsmanship is exceptional and delivery was on time!' },
-    { name: 'Ramesh Thapa', location: 'Pokhara', rating: 5, text: 'WoodCraft has the best quality furniture I\'ve found in Nepal. Will definitely order again.' },
-    { name: 'Priya Gurung', location: 'Lalitpur', rating: 4, text: 'Great selection and easy checkout. The teak wood chair is even better in person.' },
+const SERVICES = [
+    { icon: Ruler,  title: 'Custom Design',   desc: 'Tailored to your exact space and vision' },
+    { icon: Leaf,   title: 'Quality Wood',     desc: 'Sustainably sourced Sal, Teak & Rosewood' },
+    { icon: Hammer, title: 'Expert Craft',     desc: 'Skilled artisans with decades of experience' },
+    { icon: Wrench, title: 'Installation',     desc: 'White-glove delivery and setup included' },
 ];
 
-function ProductCard({ product }: { product: Product }) {
-    const [imgLoaded, setImgLoaded] = useState(false);
+function ProductCard({ product, index }: { product: Product; index: number }) {
     return (
-        <Link href={`/shop/${product.slug}`} className="wood-card group overflow-hidden block">
-            <div className="aspect-square bg-accent overflow-hidden relative">
-                {!imgLoaded && <div className="skeleton-wood absolute inset-0" />}
-                {product.images?.[0]
-                    ? <img src={imgSrc(product.images) ?? ''} alt={product.name} onLoad={() => setImgLoaded(true)} className={`w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ${imgLoaded ? 'opacity-100' : 'opacity-0'}`} />
-                    : <div className="w-full h-full flex items-center justify-center text-6xl">🪑</div>
-                }
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
-            </div>
-            <div className="p-4">
-                <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">{product.category.name}</p>
-                <p className="font-semibold mt-1 truncate">{product.name}</p>
-                <p className="text-primary font-bold mt-1">Rs. {Number(product.price).toLocaleString()}</p>
-            </div>
-        </Link>
+        <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: '-60px' }}
+            transition={{ delay: index * 0.08, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+        >
+            <Link href={`/shop/${product.slug}`}
+                className="group block overflow-hidden bg-card border border-border hover:shadow-2xl transition-all duration-500 hover:-translate-y-1 rounded-2xl">
+                <div className="aspect-[4/3] overflow-hidden bg-muted">
+                    {product.images?.[0]
+                        ? <img src={imgSrc(product.images) ?? ''} alt={product.name}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+                        : <img src={CAT_IMAGES.default} alt={product.name} className="w-full h-full object-cover opacity-40" />
+                    }
+                </div>
+                <div className="p-5">
+                    <p className="text-xs text-muted-foreground uppercase tracking-widest mb-1">{product.category.name}</p>
+                    <p className="serif font-semibold text-base">{product.name}</p>
+                    <p className="text-primary font-medium mt-2 text-sm">रू {Number(product.price).toLocaleString()}</p>
+                </div>
+            </Link>
+        </motion.div>
     );
 }
 
 export default function Welcome({ canRegister = true, featured = [], categories = [], total_products = 0 }: {
     canRegister?: boolean; featured: Product[]; categories: Category[]; total_products: number;
 }) {
-    const [testimonialIdx, setTestimonialIdx] = useState(0);
-    const [email, setEmail] = useState('');
-
-    // Auto-rotate testimonials
-    useEffect(() => {
-        const t = setInterval(() => setTestimonialIdx(i => (i + 1) % TESTIMONIALS.length), 4000);
-        return () => clearInterval(t);
-    }, []);
+    useScrollReveal();
+    const heroRef = useRef<HTMLElement>(null);
+    const { scrollYProgress } = useScroll({ target: heroRef, offset: ['start start', 'end start'] });
+    const heroY = useTransform(scrollYProgress, [0, 1], ['0%', '30%']);
+    const heroOpacity = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
 
     return (
         <ShopLayout>
-            <Head title="WoodCraft — Premium Handcrafted Furniture Nepal" />
+            <Head title="Wood Kala Nepal — Premium Handcrafted Furniture" />
 
-            {/* ── Hero ── */}
-            <section className="relative overflow-hidden bg-gradient-to-br from-primary/90 via-primary to-primary/80 text-primary-foreground">
-                {/* Decorative circles */}
-                <div className="absolute -top-32 -right-32 w-96 h-96 bg-white/5 rounded-full" />
-                <div className="absolute -bottom-20 -left-20 w-72 h-72 bg-white/5 rounded-full" />
-
-                <div className="relative max-w-7xl mx-auto px-6 py-20 md:py-32 grid md:grid-cols-2 gap-12 items-center">
-                    <div className="space-y-6 animate-in fade-in slide-in-from-left-8 duration-700">
-                        <span className="inline-flex items-center gap-2 bg-white/15 backdrop-blur-sm px-4 py-1.5 rounded-full text-sm font-medium">
-                            🏆 Nepal's #1 Furniture Marketplace
-                        </span>
-                        <h1 className="text-4xl md:text-6xl font-bold leading-tight">
-                            Handcrafted<br />
-                            <span className="text-white/80">Furniture</span><br />
-                            for Your Home
-                        </h1>
-                        <p className="text-primary-foreground/80 text-lg max-w-md">
-                            Discover premium woodcraft furniture made by skilled Nepali artisans. Timeless quality, delivered to your door.
-                        </p>
-                        <div className="flex flex-wrap gap-3">
-                            <Link href="/shop" className="inline-flex items-center gap-2 bg-white text-primary font-semibold px-6 py-3 rounded-xl hover:bg-white/90 transition-all active:scale-95">
-                                Shop Now <ArrowRight className="w-4 h-4" />
+            {/* ── Hero: Full-width immersive with parallax ── */}
+            <section ref={heroRef} className="relative h-screen min-h-[600px] flex items-center justify-center overflow-hidden">
+                <motion.div style={{ y: heroY }} className="absolute inset-0">
+                    <img
+                        src="https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=1800&q=90"
+                        alt="Premium wooden interior"
+                        className="w-full h-full object-cover"
+                    />
+                </motion.div>
+                <div className="absolute inset-0 bg-black/45" />
+                <motion.div style={{ opacity: heroOpacity }}
+                    className="relative z-10 text-center text-white px-6 max-w-3xl mx-auto space-y-7">
+                    <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2, duration: 0.6 }}
+                        className="text-xs font-medium tracking-[0.3em] uppercase text-white/70">
+                        Handcrafted in Nepal
+                    </motion.p>
+                    <motion.h1 initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35, duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+                        className="serif text-5xl md:text-7xl font-bold leading-tight">
+                        Furniture That<br />
+                        <span className="italic text-[#C49A6C]">Tells a Story</span>
+                    </motion.h1>
+                    <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5, duration: 0.6 }}
+                        className="text-white/70 text-base max-w-md mx-auto leading-relaxed">
+                        Each piece is crafted by skilled Nepali artisans using sustainably sourced wood — built to last generations.
+                    </motion.p>
+                    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.65, duration: 0.6 }}
+                        className="flex flex-wrap gap-4 justify-center pt-2">
+                        <Link href="/shop"
+                            className="group inline-flex items-center gap-3 border border-white/60 text-white px-8 py-4 text-sm font-medium tracking-widest uppercase hover:bg-white hover:text-[#1A1A1A] transition-all duration-300">
+                            Explore Collection
+                            <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                        </Link>
+                        <button type="button" onClick={() => { window.location.href = '/auth/google'; }}
+                            className="inline-flex items-center gap-2 bg-white text-[#1A1A1A] px-8 py-4 text-sm font-medium tracking-widest uppercase hover:bg-white/90 transition-all duration-300">
+                            <svg className="w-4 h-4" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+                            Continue with Google
+                        </button>
+                        {canRegister && (
+                            <Link href="/seller/login"
+                                className="inline-flex items-center gap-2 bg-[#A67C52] text-white px-8 py-4 text-sm font-medium tracking-widest uppercase hover:bg-[#8B6340] transition-all duration-300">
+                                Start Selling
                             </Link>
-                            {canRegister && (
-                                <Link href="/register" className="inline-flex items-center gap-2 border-2 border-white/50 text-white font-semibold px-6 py-3 rounded-xl hover:bg-white/10 transition-all">
-                                    Get Started
-                                </Link>
-                            )}
-                        </div>
-                        {/* Stats */}
-                        <div className="flex gap-8 pt-2">
-                            {[
-                                { value: `${total_products}+`, label: 'Products' },
-                                { value: `${categories.length}`, label: 'Categories' },
-                                { value: '100%', label: 'Handcrafted' },
-                            ].map(s => (
-                                <div key={s.label}>
-                                    <p className="text-2xl font-bold">{s.value}</p>
-                                    <p className="text-sm text-primary-foreground/70">{s.label}</p>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                    <div className="hidden md:flex justify-center animate-in fade-in slide-in-from-right-8 duration-700">
-                        <div className="relative w-80 h-80">
-                            <div className="absolute inset-0 bg-white/10 rounded-full blur-3xl" />
-                            <span className="relative text-[200px] flex items-center justify-center h-full select-none drop-shadow-2xl">🪑</span>
-                        </div>
-                    </div>
-                </div>
-                {/* Wave */}
-                <div className="absolute bottom-0 left-0 right-0 h-12 bg-background" style={{ clipPath: 'ellipse(55% 100% at 50% 100%)' }} />
+                        )}
+                    </motion.div>
+                    {/* Stats */}
+                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.85, duration: 0.6 }}
+                        className="flex justify-center gap-12 pt-4 border-t border-white/15">
+                        {[{ v: `${total_products}+`, l: 'Products' }, { v: `${categories.length}`, l: 'Categories' }, { v: '77', l: 'Districts' }].map((s, i) => (
+                            <motion.div key={s.l} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.9 + i * 0.1 }}
+                                className="text-center">
+                                <p className="serif text-2xl font-bold">{s.v}</p>
+                                <p className="text-xs text-white/50 mt-0.5 tracking-widest uppercase">{s.l}</p>
+                            </motion.div>
+                        ))}
+                    </motion.div>
+                </motion.div>
+                {/* Scroll indicator */}
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.2 }}
+                    className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-white/40">
+                    <div className="w-px h-12 bg-white/20 animate-pulse" />
+                    <p className="text-[10px] tracking-widest uppercase">Scroll</p>
+                </motion.div>
             </section>
 
-            {/* ── Categories ── */}
-            {categories.length > 0 && (
-                <section className="max-w-7xl mx-auto px-6 py-16">
-                    <div className="flex items-end justify-between mb-8">
-                        <div>
-                            <p className="text-sm font-medium text-primary uppercase tracking-widest mb-1">Browse</p>
-                            <h2 className="text-3xl font-bold">Shop by Category</h2>
-                        </div>
-                        <Link href="/shop" className="text-sm text-primary font-medium hover:underline hidden md:block">View all →</Link>
+            {/* ── Services ── */}
+            <section className="max-w-6xl mx-auto px-6 py-20">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+                    {SERVICES.map((s, i) => {
+                        const Icon = s.icon;
+                        return (
+                            <motion.div key={s.title}
+                                initial={{ opacity: 0, y: 24 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                viewport={{ once: true, margin: '-40px' }}
+                                transition={{ delay: i * 0.1, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+                                className="text-center space-y-3">
+                                <motion.div whileHover={{ scale: 1.1, rotate: 3 }} transition={{ type: 'spring', stiffness: 300 }}
+                                    className="w-12 h-12 border border-primary/30 flex items-center justify-center mx-auto">
+                                    <Icon className="w-5 h-5 text-primary" strokeWidth={1.5} />
+                                </motion.div>
+                                <p className="serif font-semibold text-sm">{s.title}</p>
+                                <p className="text-xs text-muted-foreground leading-relaxed">{s.desc}</p>
+                            </motion.div>
+                        );
+                    })}
+                </div>
+            </section>
+
+            {/* ── Category Masonry ── */}
+            <section className="max-w-7xl mx-auto px-6 pb-20">
+                <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
+                    transition={{ duration: 0.5 }} className="flex items-end justify-between mb-10">
+                    <div>
+                        <p className="text-xs text-primary uppercase tracking-[0.25em] mb-2">Browse</p>
+                        <h2 className="serif text-3xl font-bold">Our Collections</h2>
                     </div>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4">
-                        {categories.map(cat => (
-                            <Link key={cat.id} href={`/shop?category=${cat.slug}`}
-                                className="wood-card p-5 text-center group cursor-pointer hover:-translate-y-1">
-                                <div className="text-4xl mb-3 group-hover:scale-110 transition-transform duration-300">
-                                    {CATEGORY_ICONS[cat.slug] ?? CATEGORY_ICONS.default}
+                    <Link href="/shop" className="text-sm text-muted-foreground hover:text-primary transition-colors tracking-wide">View All →</Link>
+                </motion.div>
+
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4 auto-rows-[220px]">
+                    {[
+                        { href: '/shop?category=sofas', img: CAT_IMAGES.sofas, title: 'Living Room', sub: 'Sofas & Seating', span: 'col-span-1 md:row-span-2' },
+                        { href: '/shop?category=beds', img: CAT_IMAGES.beds, title: 'Bedroom', sub: '', span: '' },
+                        { href: '/shop?category=tables', img: CAT_IMAGES.tables, title: 'Dining', sub: '', span: '' },
+                        { href: '/shop?category=chairs', img: CAT_IMAGES.office, title: 'Office & Study', sub: '', span: 'col-span-1 md:col-span-2' },
+                    ].map((cat, i) => (
+                        <motion.div key={cat.href}
+                            initial={{ opacity: 0, scale: 0.96 }}
+                            whileInView={{ opacity: 1, scale: 1 }}
+                            viewport={{ once: true, margin: '-40px' }}
+                            transition={{ delay: i * 0.1, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+                            className={cat.span}>
+                            <Link href={cat.href} className="group relative overflow-hidden bg-muted block w-full h-full">
+                                <img src={cat.img} alt={cat.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+                                <div className="absolute bottom-6 left-6">
+                                    <p className="serif text-xl md:text-2xl font-bold text-white">{cat.title}</p>
+                                    {cat.sub && <p className="text-white/60 text-xs mt-1 tracking-widest uppercase">{cat.sub}</p>}
                                 </div>
-                                <p className="font-semibold text-sm">{cat.name}</p>
-                                <p className="text-xs text-muted-foreground mt-0.5">{cat.products_count} items</p>
                             </Link>
-                        ))}
-                    </div>
-                </section>
-            )}
+                        </motion.div>
+                    ))}
+                </div>
+            </section>
 
             {/* ── Featured Products ── */}
             {featured.length > 0 && (
-                <section className="max-w-7xl mx-auto px-6 py-6 pb-16">
-                    <div className="flex items-end justify-between mb-8">
+                <section className="max-w-7xl mx-auto px-6 pb-20">
+                    <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
+                        transition={{ duration: 0.5 }} className="flex items-end justify-between mb-10">
                         <div>
-                            <p className="text-sm font-medium text-primary uppercase tracking-widest mb-1">Handpicked</p>
-                            <h2 className="text-3xl font-bold">Featured Products</h2>
+                            <p className="text-xs text-primary uppercase tracking-[0.25em] mb-2">Handpicked</p>
+                            <h2 className="serif text-3xl font-bold">Featured Pieces</h2>
                         </div>
-                        <Link href="/shop" className="text-sm text-primary font-medium hover:underline hidden md:block">View all →</Link>
-                    </div>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-5">
-                        {featured.map(p => <ProductCard key={p.id} product={p} />)}
-                    </div>
-                    <div className="text-center mt-8">
-                        <Link href="/shop" className="btn-wood-outline inline-flex items-center gap-2">
-                            <ShoppingBag className="w-4 h-4" /> Browse All Products
-                        </Link>
+                        <Link href="/shop" className="text-sm text-muted-foreground hover:text-primary transition-colors">View All →</Link>
+                    </motion.div>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
+                        {featured.slice(0, 8).map((p, i) => <ProductCard key={p.id} product={p} index={i} />)}
                     </div>
                 </section>
             )}
 
-            {/* ── Why WoodCraft ── */}
-            <section className="bg-card border-y border-border py-16">
-                <div className="max-w-7xl mx-auto px-6">
-                    <div className="text-center mb-10">
-                        <p className="text-sm font-medium text-primary uppercase tracking-widest mb-1">Why Us</p>
-                        <h2 className="text-3xl font-bold">The WoodCraft Difference</h2>
+            {/* ── Glassmorphism CTA Banner ── */}
+            <section className="max-w-7xl mx-auto px-6 pb-20">
+                <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
+                    transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+                    className="relative overflow-hidden rounded-3xl">
+                    <img src="https://images.unsplash.com/photo-1504148455328-c376907d081c?w=1400&q=85"
+                        alt="Woodworking" className="absolute inset-0 w-full h-full object-cover" />
+                    <div className="absolute inset-0 bg-gradient-to-r from-[#1A1A1A]/90 via-[#1A1A1A]/70 to-transparent" />
+                    {/* Glassmorphism overlay card */}
+                    <div className="relative z-10 px-12 py-16 max-w-lg">
+                        <p className="text-xs text-[#C49A6C] uppercase tracking-[0.25em] mb-4">For Artisans</p>
+                        <h2 className="serif text-4xl font-bold text-white leading-tight mb-4">
+                            Turn your craft<br />into a business.
+                        </h2>
+                        <p className="text-white/60 text-sm leading-relaxed mb-8">
+                            Join Nepal's finest woodcraft marketplace. Free setup, 0% commission on first 10 orders, nationwide reach.
+                        </p>
+                        <Link href="/seller/login"
+                            className="inline-flex items-center gap-3 border border-white/50 text-white px-8 py-4 text-sm font-medium tracking-widest uppercase hover:bg-white hover:text-[#1A1A1A] transition-all duration-300 group">
+                            Start Selling Free
+                            <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                        </Link>
                     </div>
-                    <div className="grid md:grid-cols-3 gap-6">
-                        {[
-                            { icon: <Shield className="w-6 h-6" />, title: 'Premium Quality', desc: 'Every piece is handcrafted by skilled Nepali artisans using sustainably sourced wood.' },
-                            { icon: <span className="text-2xl">💳</span>, title: 'Secure Payments', desc: 'Pay safely with Khalti, eSewa, or Cash on Delivery — your choice, your comfort.' },
-                            { icon: <Truck className="w-6 h-6" />, title: 'Nationwide Delivery', desc: 'We deliver across Nepal with care, ensuring your furniture arrives in perfect condition.' },
-                        ].map(f => (
-                            <div key={f.title} className="wood-card p-6 flex gap-4">
-                                <div className="w-12 h-12 bg-primary/10 text-primary rounded-xl flex items-center justify-center shrink-0">{f.icon}</div>
-                                <div>
-                                    <h3 className="font-bold mb-1">{f.title}</h3>
-                                    <p className="text-sm text-muted-foreground">{f.desc}</p>
+                    {/* Floating glass card */}
+                    <motion.div
+                        initial={{ opacity: 0, x: 40 }}
+                        whileInView={{ opacity: 1, x: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ delay: 0.3, duration: 0.6 }}
+                        className="absolute right-12 top-1/2 -translate-y-1/2 hidden lg:block">
+                        <div className="glass rounded-2xl p-6 w-56 space-y-4">
+                            {[
+                                { label: 'Active Sellers', value: '240+' },
+                                { label: 'Products Listed', value: '1,800+' },
+                                { label: 'Orders Delivered', value: '5,200+' },
+                            ].map(s => (
+                                <div key={s.label}>
+                                    <p className="text-white/50 text-xs">{s.label}</p>
+                                    <p className="text-white font-bold text-lg serif">{s.value}</p>
                                 </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
+                            ))}
+                        </div>
+                    </motion.div>
+                </motion.div>
             </section>
 
             {/* ── Testimonials ── */}
-            <section className="max-w-7xl mx-auto px-6 py-16">
-                <div className="text-center mb-10">
-                    <p className="text-sm font-medium text-primary uppercase tracking-widest mb-1">Reviews</p>
-                    <h2 className="text-3xl font-bold">What Our Customers Say</h2>
-                </div>
-                <div className="relative max-w-2xl mx-auto">
-                    <div className="wood-card p-8 text-center min-h-[180px] flex flex-col items-center justify-center transition-all duration-500">
-                        <div className="flex gap-1 mb-4 justify-center">
-                            {Array.from({ length: TESTIMONIALS[testimonialIdx].rating }).map((_, i) => (
-                                <Star key={i} className="w-5 h-5 fill-primary text-primary" />
-                            ))}
-                        </div>
-                        <p className="text-lg italic text-muted-foreground mb-4">"{TESTIMONIALS[testimonialIdx].text}"</p>
-                        <p className="font-semibold">{TESTIMONIALS[testimonialIdx].name}</p>
-                        <p className="text-sm text-muted-foreground">{TESTIMONIALS[testimonialIdx].location}</p>
-                    </div>
-                    <div className="flex justify-center gap-3 mt-4">
-                        <button onClick={() => setTestimonialIdx(i => (i - 1 + TESTIMONIALS.length) % TESTIMONIALS.length)} className="p-2 rounded-xl border hover:bg-accent transition-colors"><ChevronLeft className="w-4 h-4" /></button>
-                        {TESTIMONIALS.map((_, i) => (
-                            <button key={i} onClick={() => setTestimonialIdx(i)} className={`w-2 h-2 rounded-full transition-all ${i === testimonialIdx ? 'bg-primary w-6' : 'bg-border'}`} />
-                        ))}
-                        <button onClick={() => setTestimonialIdx(i => (i + 1) % TESTIMONIALS.length)} className="p-2 rounded-xl border hover:bg-accent transition-colors"><ChevronRight className="w-4 h-4" /></button>
-                    </div>
-                </div>
-            </section>
-
-            {/* ── Newsletter ── */}
-            <section className="bg-primary text-primary-foreground py-16 px-6">
-                <div className="max-w-xl mx-auto text-center space-y-4">
-                    <h2 className="text-2xl font-bold">Stay in the Loop</h2>
-                    <p className="text-primary-foreground/80">Get notified about new arrivals, exclusive deals, and woodcraft tips.</p>
-                    <form onSubmit={e => { e.preventDefault(); setEmail(''); alert('Subscribed! Thank you.'); }} className="flex gap-2 max-w-sm mx-auto">
-                        <input type="email" required placeholder="your@email.com" value={email} onChange={e => setEmail(e.target.value)}
-                            className="flex-1 bg-white/15 border border-white/30 text-white placeholder:text-white/60 rounded-xl px-4 py-2.5 text-sm outline-none focus:bg-white/20 transition" />
-                        <button type="submit" className="bg-white text-primary font-semibold px-5 py-2.5 rounded-xl hover:bg-white/90 transition text-sm">Subscribe</button>
-                    </form>
+            <section className="max-w-6xl mx-auto px-6 pb-24">
+                <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
+                    transition={{ duration: 0.5 }} className="text-center mb-12">
+                    <p className="text-xs text-primary uppercase tracking-[0.25em] mb-2">Reviews</p>
+                    <h2 className="serif text-3xl font-bold">What Our Customers Say</h2>
+                </motion.div>
+                <div className="grid md:grid-cols-3 gap-6">
+                    {[
+                        { name: 'Priya Sharma', loc: 'Kathmandu', text: 'The dining table is absolutely stunning. The craftsmanship is beyond what I expected — it feels like a family heirloom.', rating: 5 },
+                        { name: 'Rohan Thapa', loc: 'Pokhara', text: 'Ordered a custom bookshelf and it arrived perfectly. The wood grain is beautiful and the finish is flawless.', rating: 5 },
+                        { name: 'Anita Gurung', loc: 'Biratnagar', text: 'Fast delivery, excellent packaging, and the quality is top-notch. Will definitely order again!', rating: 5 },
+                    ].map((t, i) => (
+                        <motion.div key={t.name}
+                            initial={{ opacity: 0, y: 24 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true, margin: '-40px' }}
+                            transition={{ delay: i * 0.12, duration: 0.5 }}
+                            className="neu-card p-6 space-y-4">
+                            <div className="flex gap-0.5">
+                                {Array.from({ length: t.rating }).map((_, j) => (
+                                    <span key={j} className="text-primary text-sm">★</span>
+                                ))}
+                            </div>
+                            <p className="text-sm text-muted-foreground leading-relaxed italic">"{t.text}"</p>
+                            <div>
+                                <p className="font-semibold text-sm">{t.name}</p>
+                                <p className="text-xs text-muted-foreground">{t.loc}</p>
+                            </div>
+                        </motion.div>
+                    ))}
                 </div>
             </section>
         </ShopLayout>

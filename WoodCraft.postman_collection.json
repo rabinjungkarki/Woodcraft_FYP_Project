@@ -1,0 +1,165 @@
+{
+  "info": {
+    "name": "WoodCraft API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url", "value": "https://surely-enabled-terrapin.ngrok-free.app/api" },
+    { "key": "token", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Login",
+          "event": [{ "listen": "test", "script": { "exec": ["pm.environment.set('token', pm.response.json().token);"] } }],
+          "request": {
+            "method": "POST", "url": "{{base_url}}/login",
+            "header": [{ "key": "Accept", "value": "application/json" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"customer@wood-kala.com\",\n  \"password\": \"password\"\n}" }
+          }
+        },
+        { "name": "Logout", "request": { "method": "POST", "url": "{{base_url}}/logout", "header": [{ "key": "Accept", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }] } },
+        { "name": "Me", "request": { "method": "GET", "url": "{{base_url}}/me", "header": [{ "key": "Accept", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }] } }
+      ]
+    },
+    {
+      "name": "Profile",
+      "item": [
+        { "name": "Get Profile", "request": { "method": "GET", "url": "{{base_url}}/profile", "header": [{ "key": "Accept", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }] } },
+        {
+          "name": "Update Profile", "request": {
+            "method": "PATCH", "url": "{{base_url}}/profile",
+            "header": [{ "key": "Accept", "value": "application/json" }, { "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Sita Sharma\",\n  \"email\": \"customer@wood-kala.com\",\n  \"phone\": \"9841000002\",\n  \"address\": \"Kathmandu, Nepal\"\n}" }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Products",
+      "item": [
+        { "name": "List Products", "request": { "method": "GET", "url": "{{base_url}}/products", "header": [{ "key": "Accept", "value": "application/json" }] } },
+        { "name": "Get Product", "request": { "method": "GET", "url": "{{base_url}}/products/royal-teak-dining-chair", "header": [{ "key": "Accept", "value": "application/json" }] } },
+        { "name": "List Categories", "request": { "method": "GET", "url": "{{base_url}}/categories", "header": [{ "key": "Accept", "value": "application/json" }] } }
+      ]
+    },
+    {
+      "name": "Cart",
+      "item": [
+        { "name": "Get Cart", "request": { "method": "GET", "url": "{{base_url}}/cart", "header": [{ "key": "Accept", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }] } },
+        {
+          "name": "Add to Cart", "request": {
+            "method": "POST", "url": "{{base_url}}/cart",
+            "header": [{ "key": "Accept", "value": "application/json" }, { "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }],
+            "body": { "mode": "raw", "raw": "{\n  \"product_id\": 1,\n  \"quantity\": 1\n}" }
+          }
+        },
+        {
+          "name": "Update Cart Item", "request": {
+            "method": "PATCH", "url": "{{base_url}}/cart/1",
+            "header": [{ "key": "Accept", "value": "application/json" }, { "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }],
+            "body": { "mode": "raw", "raw": "{\n  \"quantity\": 2\n}" }
+          }
+        },
+        { "name": "Remove Cart Item", "request": { "method": "DELETE", "url": "{{base_url}}/cart/1", "header": [{ "key": "Accept", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }] } }
+      ]
+    },
+    {
+      "name": "Orders",
+      "item": [
+        { "name": "List Orders", "request": { "method": "GET", "url": "{{base_url}}/orders", "header": [{ "key": "Accept", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }] } },
+        {
+          "name": "Place Order", "request": {
+            "method": "POST", "url": "{{base_url}}/orders",
+            "header": [{ "key": "Accept", "value": "application/json" }, { "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }],
+            "body": { "mode": "raw", "raw": "{\n  \"address\": \"Kathmandu, Nepal\"\n}" }
+          }
+        },
+        { "name": "Get Order", "request": { "method": "GET", "url": "{{base_url}}/orders/1", "header": [{ "key": "Accept", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }] } },
+        { "name": "Cancel Order", "request": { "method": "PATCH", "url": "{{base_url}}/orders/1/cancel", "header": [{ "key": "Accept", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }] } }
+      ]
+    },
+    {
+      "name": "Reviews",
+      "item": [
+        {
+          "name": "Add Review", "request": {
+            "method": "POST", "url": "{{base_url}}/reviews",
+            "header": [{ "key": "Accept", "value": "application/json" }, { "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }],
+            "body": { "mode": "raw", "raw": "{\n  \"product_id\": 1,\n  \"rating\": 5,\n  \"comment\": \"Great product!\"\n}" }
+          }
+        },
+        { "name": "Delete Review", "request": { "method": "DELETE", "url": "{{base_url}}/reviews/1", "header": [{ "key": "Accept", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }] } }
+      ]
+    },
+    {
+      "name": "Seller",
+      "item": [
+        { "name": "My Products", "request": { "method": "GET", "url": "{{base_url}}/seller/products", "header": [{ "key": "Accept", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }] } },
+        {
+          "name": "Add Product", "request": {
+            "method": "POST", "url": "{{base_url}}/seller/products",
+            "header": [{ "key": "Accept", "value": "application/json" }, { "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }],
+            "body": { "mode": "raw", "raw": "{\n  \"category_id\": 1,\n  \"name\": \"Handmade Chair\",\n  \"description\": \"Beautiful handmade chair\",\n  \"price\": 5000,\n  \"stock\": 10,\n  \"material\": \"Teak Wood\",\n  \"dimensions\": \"50x50x90 cm\"\n}" }
+          }
+        },
+        {
+          "name": "Update Product", "request": {
+            "method": "PATCH", "url": "{{base_url}}/seller/products/1",
+            "header": [{ "key": "Accept", "value": "application/json" }, { "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }],
+            "body": { "mode": "raw", "raw": "{\n  \"category_id\": 1,\n  \"name\": \"Handmade Chair\",\n  \"price\": 5500,\n  \"stock\": 8,\n  \"is_active\": true\n}" }
+          }
+        },
+        { "name": "Delete Product", "request": { "method": "DELETE", "url": "{{base_url}}/seller/products/1", "header": [{ "key": "Accept", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }] } }
+      ]
+    },
+    {
+      "name": "Admin",
+      "item": [
+        { "name": "List Users", "request": { "method": "GET", "url": "{{base_url}}/admin/users", "header": [{ "key": "Accept", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }] } },
+        { "name": "List Categories", "request": { "method": "GET", "url": "{{base_url}}/admin/categories", "header": [{ "key": "Accept", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }] } },
+        {
+          "name": "Create Category", "request": {
+            "method": "POST", "url": "{{base_url}}/admin/categories",
+            "header": [{ "key": "Accept", "value": "application/json" }, { "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Outdoor\",\n  \"description\": \"Outdoor furniture\"\n}" }
+          }
+        },
+        {
+          "name": "Update Category", "request": {
+            "method": "PATCH", "url": "{{base_url}}/admin/categories/1",
+            "header": [{ "key": "Accept", "value": "application/json" }, { "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Chairs\",\n  \"description\": \"Updated description\"\n}" }
+          }
+        },
+        { "name": "Delete Category", "request": { "method": "DELETE", "url": "{{base_url}}/admin/categories/1", "header": [{ "key": "Accept", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }] } },
+        { "name": "List Products", "request": { "method": "GET", "url": "{{base_url}}/admin/products", "header": [{ "key": "Accept", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }] } },
+        {
+          "name": "Create Product", "request": {
+            "method": "POST", "url": "{{base_url}}/admin/products",
+            "header": [{ "key": "Accept", "value": "application/json" }, { "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }],
+            "body": { "mode": "raw", "raw": "{\n  \"category_id\": 1,\n  \"name\": \"New Chair\",\n  \"price\": 4000,\n  \"stock\": 15\n}" }
+          }
+        },
+        {
+          "name": "Update Product", "request": {
+            "method": "PATCH", "url": "{{base_url}}/admin/products/1",
+            "header": [{ "key": "Accept", "value": "application/json" }, { "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }],
+            "body": { "mode": "raw", "raw": "{\n  \"category_id\": 1,\n  \"name\": \"Updated Chair\",\n  \"price\": 4500,\n  \"stock\": 10,\n  \"is_active\": true\n}" }
+          }
+        },
+        { "name": "Delete Product", "request": { "method": "DELETE", "url": "{{base_url}}/admin/products/1", "header": [{ "key": "Accept", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }] } },
+        { "name": "List Orders", "request": { "method": "GET", "url": "{{base_url}}/admin/orders", "header": [{ "key": "Accept", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }] } },
+        {
+          "name": "Update Order Status", "request": {
+            "method": "PATCH", "url": "{{base_url}}/admin/orders/1",
+            "header": [{ "key": "Accept", "value": "application/json" }, { "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }],
+            "body": { "mode": "raw", "raw": "{\n  \"status\": \"shipped\"\n}" }
+          }
+        }
+      ]
+    }
+  ]
+}

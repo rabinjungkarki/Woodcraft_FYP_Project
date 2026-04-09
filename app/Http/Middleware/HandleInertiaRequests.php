@@ -42,6 +42,16 @@ class HandleInertiaRequests extends Middleware
                 'user' => $request->user(),
             ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
+            'cart_count' => $request->user()
+                ? \App\Models\CartItem::where('user_id', $request->user()->id)->sum('quantity')
+                : 0,
+            'wishlist_count' => $request->user()
+                ? \App\Models\Wishlist::where('user_id', $request->user()->id)->count()
+                : 0,
+            'flash' => [
+                'success' => $request->session()->get('success'),
+                'error'   => $request->session()->get('error'),
+            ],
         ];
     }
 }

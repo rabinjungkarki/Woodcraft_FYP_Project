@@ -9,8 +9,12 @@ class AdminMiddleware
 {
     public function handle(Request $request, Closure $next)
     {
-        if (!$request->user() || !$request->user()->isAdmin()) {
-            abort(403);
+        if (!$request->user()) {
+            return redirect('/seller/login');
+        }
+
+        if (!$request->user()->isAdmin()) {
+            return redirect('/shop')->with('error', 'Access denied.');
         }
 
         return $next($request);

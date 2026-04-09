@@ -16,6 +16,12 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('orders', [OrderController::class, 'index'])->name('orders.index');
     Route::patch('orders/{order}', [OrderController::class, 'update'])->name('orders.update');
     Route::get('users', [UserController::class, 'index'])->name('users.index');
+    Route::patch('users/{user}/role', [UserController::class, 'updateRole'])->name('users.role');
+    Route::delete('users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
+
+    Route::get('sellers', [\App\Http\Controllers\Admin\SellerManagementController::class, 'index'])->name('sellers.index');
+    Route::patch('sellers/{user}/status', [\App\Http\Controllers\Admin\SellerManagementController::class, 'updateStatus'])->name('sellers.status');
+    Route::patch('sellers/{user}/payout', [\App\Http\Controllers\Admin\SellerManagementController::class, 'recordPayout'])->name('sellers.payout');
     Route::get('reviews', [ReviewController::class, 'index'])->name('reviews.index');
     Route::delete('reviews/{review}', [ReviewController::class, 'destroy'])->name('reviews.destroy');
 });

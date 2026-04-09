@@ -1,38 +1,53 @@
-import { Head, Link, useForm } from '@inertiajs/react';
-import AppLayout from '@/layouts/app-layout';
+import { Head, useForm } from '@inertiajs/react';
+import SellerLayout from '@/layouts/seller-layout';
+import { Trash2, Star } from 'lucide-react';
 
-interface Review { id: number; rating: number; comment: string | null; is_approved: boolean; user: { name: string }; product: { name: string }; created_at: string; }
+interface Review { id: number; rating: number; comment: string | null; user: { name: string }; product: { name: string }; created_at: string; }
 
 export default function AdminReviews({ reviews }: { reviews: Review[] }) {
     const form = useForm({});
 
     return (
-        <AppLayout breadcrumbs={[{ title: 'Admin', href: '/admin' }, { title: 'Reviews', href: '/admin/reviews' }]}>
+        <SellerLayout title="Reviews">
             <Head title="Reviews" />
-            <div className="p-6 space-y-6">
-                <h1 className="text-2xl font-bold">Reviews</h1>
-                <div className="rounded-xl border bg-white dark:bg-neutral-900 overflow-x-auto">
+            <div className="space-y-5">
+                <div className="flex items-center justify-between">
+                    <h1 className="text-xl font-bold" style={{ color: '#1A1A1A' }}>Reviews</h1>
+                    <span className="text-sm" style={{ color: '#9A8070' }}>{reviews.length} total</span>
+                </div>
+
+                <div className="bg-white rounded-2xl border border-[#E8DDD0] overflow-x-auto">
                     <table className="w-full text-sm">
-                        <thead>
-                            <tr className="text-left text-muted-foreground border-b">
-                                <th className="px-4 py-3">Customer</th>
-                                <th className="px-4 py-3">Product</th>
-                                <th className="px-4 py-3">Rating</th>
-                                <th className="px-4 py-3">Comment</th>
-                                <th className="px-4 py-3">Date</th>
-                                <th className="px-4 py-3">Action</th>
+                        <thead style={{ background: '#FDF9F5', borderBottom: '1px solid #E8DDD0' }}>
+                            <tr>
+                                {['Customer','Product','Rating','Comment','Date','Action'].map(h => (
+                                    <th key={h} className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-left" style={{ color: '#7A6A5A' }}>{h}</th>
+                                ))}
                             </tr>
                         </thead>
                         <tbody>
-                            {reviews.map(r => (
-                                <tr key={r.id} className="border-b last:border-0">
-                                    <td className="px-4 py-3">{r.user.name}</td>
-                                    <td className="px-4 py-3">{r.product.name}</td>
-                                    <td className="px-4 py-3">{'★'.repeat(r.rating)}{'☆'.repeat(5 - r.rating)}</td>
-                                    <td className="px-4 py-3 max-w-xs truncate">{r.comment ?? '—'}</td>
-                                    <td className="px-4 py-3">{new Date(r.created_at).toLocaleDateString()}</td>
+                            {reviews.length === 0 ? (
+                                <tr><td colSpan={6} className="px-4 py-10 text-center text-sm" style={{ color: '#9A8070' }}>No reviews yet.</td></tr>
+                            ) : reviews.map((r, i) => (
+                                <tr key={r.id} style={{ borderBottom: i < reviews.length - 1 ? '1px solid #F0EDE8' : 'none' }}>
+                                    <td className="px-4 py-3 font-medium" style={{ color: '#1A1A1A' }}>{r.user.name}</td>
+                                    <td className="px-4 py-3 text-sm" style={{ color: '#6B5B4E' }}>{r.product.name}</td>
                                     <td className="px-4 py-3">
-                                        <button onClick={() => form.delete(`/admin/reviews/${r.id}`)} className="text-red-600 hover:underline text-xs">Delete</button>
+                                        <div className="flex gap-0.5">
+                                            {[1,2,3,4,5].map(s => (
+                                                <Star key={s} className="w-3.5 h-3.5" style={{ fill: s <= r.rating ? '#A67C52' : 'none', color: s <= r.rating ? '#A67C52' : '#DDD6CC' }} />
+                                            ))}
+                                        </div>
+                                    </td>
+                                    <td className="px-4 py-3 max-w-xs" style={{ color: '#6B5B4E' }}>
+                                        <span className="line-clamp-2">{r.comment ?? '—'}</span>
+                                    </td>
+                                    <td className="px-4 py-3 text-xs" style={{ color: '#9A8070' }}>{new Date(r.created_at).toLocaleDateString()}</td>
+                                    <td className="px-4 py-3">
+                                        <button onClick={() => { if (confirm('Delete this review?')) form.delete(`/admin/reviews/${r.id}`); }}
+                                            className="p-1.5 rounded-lg hover:bg-red-50 transition-colors" style={{ color: '#dc2626' }}>
+                                            <Trash2 className="w-3.5 h-3.5" />
+                                        </button>
                                     </td>
                                 </tr>
                             ))}
@@ -40,6 +55,6 @@ export default function AdminReviews({ reviews }: { reviews: Review[] }) {
                     </table>
                 </div>
             </div>
-        </AppLayout>
+        </SellerLayout>
     );
 }

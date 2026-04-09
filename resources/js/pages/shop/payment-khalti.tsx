@@ -1,47 +1,30 @@
-import { Head, Link, useForm } from '@inertiajs/react';
+import { Head, Link } from '@inertiajs/react';
+import ShopLayout from '@/components/shop-layout';
 
-interface Order { id: number; total: number; payment_method: string; }
-
-declare const KhaltiCheckout: any;
+interface Order { id: number; total: number; }
 
 export default function PaymentKhalti({ order }: { order: Order }) {
-    const form = useForm({ token: '', amount: 0 });
-
-    function initiateKhalti() {
-        const config = {
-            publicKey: (window as any).khaltiPublicKey ?? 'test_public_key_dc74e0fd57cb46cd93832aee0a390234',
-            productIdentity: String(order.id),
-            productName: `WoodCraft Order #${order.id}`,
-            productUrl: window.location.href,
-            paymentPreference: ['KHALTI'],
-            eventHandler: {
-                onSuccess(payload: { token: string; amount: number }) {
-                    form.setData({ token: payload.token, amount: payload.amount });
-                    form.post(`/payment/khalti/${order.id}/verify`);
-                },
-                onError(error: unknown) { console.error(error); },
-                onClose() {},
-            },
-        };
-        const checkout = new KhaltiCheckout(config);
-        checkout.show({ amount: Math.round(Number(order.total) * 100) });
-    }
-
     return (
-        <>
-            <Head title="Pay with Khalti - WoodCraft" />
-            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-                <div className="bg-white rounded-xl border p-8 max-w-sm w-full text-center space-y-4">
-                    <p className="text-4xl">💜</p>
-                    <h1 className="text-xl font-bold">Pay with Khalti</h1>
-                    <p className="text-gray-600">Order #{order.id}</p>
-                    <p className="text-2xl font-bold text-amber-700">Rs. {Number(order.total).toLocaleString()}</p>
-                    <button onClick={initiateKhalti} className="w-full bg-purple-600 text-white py-3 rounded-xl font-medium hover:bg-purple-700">
-                        Pay Now
-                    </button>
-                    <Link href={`/orders/${order.id}`} className="block text-sm text-gray-500 hover:underline">Cancel</Link>
+        <ShopLayout>
+            <Head title="Redirecting to Khalti — Wood Kala" />
+            <div className="max-w-sm mx-auto px-4 py-20 text-center">
+                <div className="bg-white rounded-2xl border p-8 space-y-5" style={{ borderColor: '#E8DDD0', boxShadow: '0 4px 24px rgba(0,0,0,0.08)' }}>
+                    <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto" style={{ background: '#F5F0FF' }}>
+                        <svg viewBox="0 0 24 24" className="w-8 h-8" fill="#6d28d9"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/></svg>
+                    </div>
+                    <div>
+                        <h1 className="text-xl font-bold" style={{ color: '#1A1A1A', fontFamily: "'Playfair Display', serif" }}>Redirecting to Khalti</h1>
+                        <p className="text-sm mt-1" style={{ color: '#9A8070' }}>Order #{order.id}</p>
+                    </div>
+                    <p className="text-2xl font-bold" style={{ color: '#A67C52' }}>रू {Number(order.total).toLocaleString()}</p>
+                    <p className="text-sm" style={{ color: '#6B5B4E' }}>
+                        You should have been redirected to Khalti automatically. If not, please go back and try again.
+                    </p>
+                    <Link href={`/orders/${order.id}`} className="block text-sm font-medium hover:underline" style={{ color: '#A67C52' }}>
+                        ← View Order
+                    </Link>
                 </div>
             </div>
-        </>
+        </ShopLayout>
     );
 }

@@ -71,20 +71,11 @@ const mediaQuery = (): MediaQueryList | null => {
 const handleSystemThemeChange = (): void => applyTheme(currentAppearance);
 
 export function initializeTheme(): void {
-    if (typeof window === 'undefined') {
-        return;
-    }
-
-    if (!localStorage.getItem('appearance')) {
-        localStorage.setItem('appearance', 'system');
-        setCookie('appearance', 'system');
-    }
-
-    currentAppearance = getStoredAppearance();
-    applyTheme(currentAppearance);
-
-    // Set up system theme change listener
-    mediaQuery()?.addEventListener('change', handleSystemThemeChange);
+    if (typeof window === 'undefined') return;
+    // Force light mode always
+    localStorage.removeItem('appearance');
+    document.documentElement.classList.remove('dark');
+    document.documentElement.style.colorScheme = 'light';
 }
 
 export function useAppearance(): UseAppearanceReturn {

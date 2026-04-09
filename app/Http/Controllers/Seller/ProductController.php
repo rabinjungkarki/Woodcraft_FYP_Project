@@ -21,6 +21,10 @@ class ProductController extends Controller
 
     public function store(Request $request)
     {
+        if (auth()->user()->seller_status !== 'approved') {
+            return back()->withErrors(['product' => 'Your seller account must be approved before adding products.']);
+        }
+
         $data = $request->validate([
             'category_id' => 'required|exists:categories,id',
             'name'        => 'required|string|max:255',

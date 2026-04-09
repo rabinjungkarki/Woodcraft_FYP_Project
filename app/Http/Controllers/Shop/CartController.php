@@ -18,9 +18,17 @@ class CartController extends Controller
 
         $total = $items->sum(fn($i) => $i->product->price * $i->quantity);
 
+        $trending = Product::with('category')
+            ->where('is_active', true)
+            ->whereNotIn('id', $items->pluck('product_id'))
+            ->latest()
+            ->take(3)
+            ->get();
+
         return Inertia::render('shop/cart', [
-            'items' => $items,
-            'total' => $total,
+            'items'    => $items,
+            'total'    => $total,
+            'trending' => $trending,
         ]);
     }
 
@@ -29,6 +37,11 @@ class CartController extends Controller
         $request->validate(['product_id' => 'required|exists:products,id', 'quantity' => 'integer|min:1']);
 
         $qty = $request->get('quantity', 1);
+
+        $product = Product::findOrFail($request->product_id);
+        if ($product->seller_id === auth()->id()) {
+            return back()->withErrors(['product' => 'You cannot add your own product to cart.']);
+        }
 
         $item = CartItem::where('user_id', auth()->id())
             ->where('product_id', $request->product_id)

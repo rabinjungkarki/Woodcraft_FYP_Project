@@ -4,11 +4,20 @@ use App\Http\Controllers\Seller\DashboardController;
 use App\Http\Controllers\Seller\ProductController;
 use App\Http\Controllers\Seller\RegisterController;
 use Illuminate\Support\Facades\Route;
+use Inertia\Inertia;
+
+// Dedicated seller login page (guest only)
+Route::middleware('guest')->get('/seller/login', fn () => Inertia::render('auth/seller-auth-page', [
+    'defaultTab' => 'login',
+]))->name('seller.login');
 
 // Seller registration (any logged-in user)
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/seller/register', [RegisterController::class, 'show'])->name('seller.register');
     Route::post('/seller/register', [RegisterController::class, 'store'])->name('seller.register.store');
+    Route::get('/seller/approval-status', fn () => response()->json([
+        'approved' => auth()->user()->seller_status === 'approved' && auth()->user()->role === 'seller',
+    ]))->name('seller.approval-status');
 });
 
 // Seller panel (seller role only)
@@ -18,4 +27,8 @@ Route::middleware(['auth', 'verified', 'seller'])->prefix('seller')->name('selle
     Route::post('/products', [ProductController::class, 'store'])->name('products.store');
     Route::post('/products/{product}', [ProductController::class, 'update'])->name('products.update');
     Route::delete('/products/{product}', [ProductController::class, 'destroy'])->name('products.destroy');
+    Route::get('/orders', [DashboardController::class, 'orders'])->name('orders');
+    Route::patch('/orders/{order}', [DashboardController::class, 'updateOrder'])->name('orders.update');
+    Route::get('/profile', [DashboardController::class, 'profile'])->name('profile');
+    Route::patch('/profile', [DashboardController::class, 'updateProfile'])->name('profile.update');
 });

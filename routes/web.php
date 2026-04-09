@@ -17,20 +17,16 @@ Route::get('/', function () {
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', function () {
-        if (auth()->user()->isAdmin()) {
-            return redirect()->route('admin.dashboard');
-        }
-
         $user = auth()->user();
-        $orders = $user->orders()->with('items.product')->latest()->take(5)->get();
-        return inertia('dashboard', [
-            'orders'       => $orders,
-            'total_orders' => $user->orders()->count(),
-            'total_spent'  => $user->orders()->where('payment_status', 'paid')->sum('total'),
-            'cart_count'   => $user->cartItems()->count(),
-        ]);
+        if ($user->isAdmin() || $user->isSeller()) {
+            return redirect('/seller/dashboard');
+        }
+        return redirect('/shop');
     })->name('dashboard');
 });
 
 require __DIR__.'/settings.php';
+
+Route::get('/auth/google', [\App\Http\Controllers\Auth\GoogleController::class, 'redirect'])->name('auth.google');
+Route::get('/auth/google/callback', [\App\Http\Controllers\Auth\GoogleController::class, 'callback']);
 

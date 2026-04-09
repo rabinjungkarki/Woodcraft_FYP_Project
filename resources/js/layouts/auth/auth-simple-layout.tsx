@@ -1,37 +1,29 @@
 import { Link } from '@inertiajs/react';
-import AppLogoIcon from '@/components/app-logo-icon';
 import { home } from '@/routes';
 import type { AuthLayoutProps } from '@/types';
 
-export default function AuthSimpleLayout({
-    children,
-    title,
-    description,
-}: AuthLayoutProps) {
+// Used by: forgot-password, verify-email, confirm-password, reset-password, 2FA
+export default function AuthSimpleLayout({ children, title, description }: AuthLayoutProps) {
     return (
-        <div className="flex min-h-svh flex-col items-center justify-center gap-6 bg-background p-6 md:p-10">
-            <div className="w-full max-w-sm">
-                <div className="flex flex-col gap-8">
-                    <div className="flex flex-col items-center gap-4">
-                        <Link
-                            href={home()}
-                            className="flex flex-col items-center gap-2 font-medium"
-                        >
-                            <div className="mb-1 flex h-9 w-9 items-center justify-center rounded-md">
-                                <AppLogoIcon className="size-9 fill-current text-[var(--foreground)] dark:text-white" />
-                            </div>
-                            <span className="sr-only">{title}</span>
-                        </Link>
+        <div className="min-h-screen flex flex-col items-center justify-center bg-[#FDFCFB] px-6 py-12">
+            {/* Zen header — logo only, centered */}
+            <Link href={home()} className="flex items-center gap-2.5 mb-10 group">
+                <img
+                    src="https://images.unsplash.com/photo-1493663284031-b7e3aefcae8e?w=48&h=48&fit=crop&q=80"
+                    alt="Wood Kala"
+                    className="h-10 w-10 rounded-lg object-cover shadow-sm group-hover:shadow-md transition-shadow"
+                />
+                <span className="serif font-bold text-xl text-foreground" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
+                    Wood Kala
+                </span>
+            </Link>
 
-                        <div className="space-y-2 text-center">
-                            <h1 className="text-xl font-medium">{title}</h1>
-                            <p className="text-center text-sm text-muted-foreground">
-                                {description}
-                            </p>
-                        </div>
-                    </div>
-                    {children}
+            <div className="w-full max-w-sm">
+                <div className="text-center mb-7 space-y-1">
+                    <h1 className="serif text-xl font-bold text-foreground">{title}</h1>
+                    {description && <p className="text-sm text-muted-foreground">{description}</p>}
                 </div>
+                {children}
             </div>
         </div>
     );

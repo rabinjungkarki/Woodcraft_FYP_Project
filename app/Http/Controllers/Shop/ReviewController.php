@@ -16,6 +16,11 @@ class ReviewController extends Controller
             'comment'    => 'nullable|string|max:1000',
         ]);
 
+        $product = \App\Models\Product::findOrFail($request->product_id);
+        if ($product->seller_id === auth()->id()) {
+            return back()->withErrors(['product' => 'You cannot review your own product.']);
+        }
+
         Review::updateOrCreate(
             ['user_id' => auth()->id(), 'product_id' => $request->product_id],
             ['rating' => $request->rating, 'comment' => $request->comment],

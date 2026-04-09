@@ -1,16 +1,16 @@
+// Wood Kala brand logo — used in sidebar and anywhere AppLogo is referenced
 export default function AppLogo() {
     return (
-        <>
-            <div className="flex aspect-square size-8 items-center justify-center rounded-md bg-sidebar-primary text-sidebar-primary-foreground">
-                <svg viewBox="0 0 24 24" fill="none" className="size-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-                    <polyline points="9 22 9 12 15 12 15 22" />
-                </svg>
-            </div>
-            <div className="ml-1 grid flex-1 text-left text-sm">
-                <span className="mb-0.5 truncate leading-tight font-semibold">WoodCraft</span>
+        <div className="flex items-center gap-2.5">
+            <img
+                src="https://images.unsplash.com/photo-1493663284031-b7e3aefcae8e?w=40&h=40&fit=crop&q=80"
+                alt="Wood Kala"
+                className="h-8 w-8 rounded object-cover shrink-0"
+            />
+            <div className="grid flex-1 text-left text-sm leading-tight">
+                <span className="truncate font-bold" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>Wood Kala</span>
                 <span className="truncate text-xs text-muted-foreground">Furniture Marketplace</span>
             </div>
-        </>
+        </div>
     );
 }
