@@ -136,7 +136,6 @@ export default function ShopShow({ product, avg_rating, user_review, related = [
                             </div>
                             <div className="divide-y divide-border">
                                 <div className="flex items-start gap-4 px-5 py-4">
-                                    <span className="text-lg mt-0.5">🌳</span>
                                     <div>
                                         <p className="font-semibold text-sm">Material Origin</p>
                                         <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
@@ -147,7 +146,6 @@ export default function ShopShow({ product, avg_rating, user_review, related = [
                                     </div>
                                 </div>
                                 <div className="flex items-start gap-4 px-5 py-4">
-                                    <span className="text-lg mt-0.5">⏱️</span>
                                     <div>
                                         <p className="font-semibold text-sm">Estimated Crafting Time</p>
                                         <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
@@ -156,7 +154,6 @@ export default function ShopShow({ product, avg_rating, user_review, related = [
                                     </div>
                                 </div>
                                 <div className="flex items-start gap-4 px-5 py-4">
-                                    <span className="text-lg mt-0.5">🤝</span>
                                     <div>
                                         <p className="font-semibold text-sm">Custom Order Available</p>
                                         <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">

@@ -261,7 +261,7 @@ function ShopLayoutInner({ children }: Props) {
     return (
         <div className="min-h-screen bg-background text-foreground flex flex-col sans">
             {/* ── Navbar ── */}
-            <header className={`sticky top-0 left-0 right-0 z-50 border-b transition-all duration-300 ${scrolled ? 'shadow-md' : 'shadow-sm'}`} style={{ background: '#FDFCFA', borderColor: '#E8DDD0' }}>
+            <header className={`sticky top-0 left-0 right-0 z-50 border-b transition-all duration-300 ${scrolled ? 'shadow-md' : 'shadow-sm'}`} style={{ background: 'rgba(248,250,247,0.97)', borderColor: '#E5E7EB', backdropFilter: 'blur(12px)' }}>
                 <div className="max-w-7xl mx-auto px-6 h-18 flex items-center gap-6" style={{ height: '68px' }}>
                     {/* Logo */}
                     <Link href="/" className="flex items-center gap-2.5 shrink-0">
@@ -282,7 +282,7 @@ function ShopLayoutInner({ children }: Props) {
                         ].map(({ href, label }) => (
                             <Link key={href} href={href}
                                 className="relative text-sm font-medium px-4 py-2 rounded-lg transition-all duration-200 hover:bg-[#EDE8E1] group"
-                                style={{ color: '#3D2B1F' }}>
+                                style={{ color: '#374151' }}>
                                 {label}
                                 <span className="absolute bottom-1 left-4 right-4 h-0.5 bg-[#A67C52] scale-x-0 group-hover:scale-x-100 transition-transform duration-200 rounded-full" />
                             </Link>

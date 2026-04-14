@@ -28,10 +28,7 @@ export default function SellerLayout({ children, title }: { children: React.Reac
 
     return (
         <div className="min-h-screen flex" style={{ background: '#F5F3F0' }}>
-
-            {/* Sidebar */}
             <aside className="w-60 shrink-0 flex flex-col border-r" style={{ background: '#FFFFFF', borderColor: '#E8DDD0' }}>
-                {/* Logo */}
                 <div className="h-16 flex items-center gap-3 px-5 border-b" style={{ borderColor: '#E8DDD0' }}>
                     <div className="w-8 h-8 rounded-lg flex items-center justify-center shadow-sm"
                         style={{ background: 'linear-gradient(135deg, #C49A6C, #8B6340)' }}>
@@ -43,7 +40,6 @@ export default function SellerLayout({ children, title }: { children: React.Reac
                     </div>
                 </div>
 
-                {/* Shop name (seller only) */}
                 {!isAdmin && user?.shop_name && (
                     <div className="px-5 py-3 border-b" style={{ borderColor: '#E8DDD0', background: '#FDF9F5' }}>
                         <p className="text-[10px] uppercase tracking-widest font-medium" style={{ color: '#9A8070' }}>Your Shop</p>
@@ -51,7 +47,6 @@ export default function SellerLayout({ children, title }: { children: React.Reac
                     </div>
                 )}
 
-                {/* Nav */}
                 <nav className="flex-1 px-3 py-4 space-y-0.5">
                     {nav.map(({ href, icon: Icon, label }) => {
                         const active = href === '/admin' ? url === '/admin' : url.startsWith(href);
@@ -73,30 +68,25 @@ export default function SellerLayout({ children, title }: { children: React.Reac
                     })}
                 </nav>
 
-                {/* Bottom */}
                 <div className="px-3 pb-4 pt-4 space-y-0.5 border-t" style={{ borderColor: '#E8DDD0' }}>
                     <Link href="/shop"
                         className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all"
                         style={{ color: '#6B5B4E' }}
                         onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = '#F5F0EB'; }}
                         onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent'; }}>
-                        <Store className="w-4 h-4" />
-                        View Shop
+                        <Store className="w-4 h-4" /> View Shop
                     </Link>
                     <Link href="/logout" method="post" as="button"
                         className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all"
                         style={{ color: '#dc2626' }}
                         onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = '#FEF2F2'; }}
                         onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent'; }}>
-                        <LogOut className="w-4 h-4" />
-                        Sign Out
+                        <LogOut className="w-4 h-4" /> Sign Out
                     </Link>
                 </div>
             </aside>
 
-            {/* Main */}
             <div className="flex-1 flex flex-col min-w-0">
-                {/* Topbar */}
                 <header className="h-16 flex items-center justify-between px-6 border-b shrink-0"
                     style={{ background: '#FFFFFF', borderColor: '#E8DDD0' }}>
                     <div className="flex items-center gap-2 text-sm" style={{ color: '#6B5B4E' }}>
@@ -119,10 +109,7 @@ export default function SellerLayout({ children, title }: { children: React.Reac
                         </div>
                     </div>
                 </header>
-
-                <main className="flex-1 p-6 overflow-auto">
-                    {children}
-                </main>
+                <main className="flex-1 p-6 overflow-auto">{children}</main>
             </div>
         </div>
     );
