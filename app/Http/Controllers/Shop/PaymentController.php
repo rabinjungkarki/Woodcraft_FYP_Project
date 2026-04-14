@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\Order;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
+use Inertia\Inertia;
 
 class PaymentController extends Controller
 {
@@ -13,22 +15,38 @@ class PaymentController extends Controller
     {
         abort_if($order->user_id !== auth()->id(), 403);
 
-        // Initiate Khalti ePay (v2)
+        $user = auth()->user();
+
         $response = Http::withHeaders([
             'Authorization' => 'Key ' . config('services.khalti.secret'),
         ])->post('https://a.khalti.com/api/v2/epayment/initiate/', [
-            'return_url'       => route('payment.khalti.verify', $order->id),
-            'website_url'      => config('app.url'),
-            'amount'           => (int) ($order->total * 100), // paisa
-            'purchase_order_id'=> (string) $order->id,
+            'return_url'        => route('payment.khalti.verify', $order->id),
+            'website_url'       => config('app.url'),
+            'amount'            => (int) ($order->total * 100), // paisa
+            'purchase_order_id' => (string) $order->id,
             'purchase_order_name' => 'Wood Kala Order #' . $order->id,
+            'customer_info'     => [
+                'name'  => $user->name,
+                'email' => $user->email,
+                'phone' => $order->phone,
+            ],
         ]);
 
-        if ($response->successful()) {
+        if ($response->successful() && $response->json('payment_url')) {
             return redirect($response->json('payment_url'));
         }
 
-        return back()->with('error', 'Could not initiate Khalti payment. Please try again.');
+        Log::error('Khalti initiation failed', [
+            'order_id' => $order->id,
+            'status'   => $response->status(),
+            'body'     => $response->json(),
+        ]);
+
+        // Show fallback page with error details
+        return Inertia::render('shop/payment-khalti', [
+            'order' => $order,
+            'error' => $response->json('detail') ?? 'Could not initiate Khalti payment.',
+        ]);
     }
 
     public function khaltiVerify(Request $request, Order $order)
@@ -37,8 +55,9 @@ class PaymentController extends Controller
 
         $pidx = $request->query('pidx');
 
-        if (!$pidx) {
-            return redirect()->route('orders.show', $order->id)->with('error', 'Payment cancelled.');
+        if (! $pidx) {
+            return redirect()->route('orders.show', $order->id)
+                ->with('error', 'Payment was cancelled.');
         }
 
         $response = Http::withHeaders([
@@ -53,9 +72,19 @@ class PaymentController extends Controller
                 'payment_ref'    => $pidx,
                 'status'         => 'processing',
             ]);
-            return redirect()->route('orders.show', $order->id)->with('success', 'Payment successful! 🎉');
+
+            return redirect()->route('orders.show', $order->id)
+                ->with('success', 'Payment successful! Your order is being processed. 🎉');
         }
 
-        return redirect()->route('orders.show', $order->id)->with('error', 'Payment verification failed.');
+        Log::error('Khalti verification failed', [
+            'order_id' => $order->id,
+            'pidx'     => $pidx,
+            'status'   => $response->status(),
+            'body'     => $response->json(),
+        ]);
+
+        return redirect()->route('orders.show', $order->id)
+            ->with('error', 'Payment verification failed. If money was deducted, please contact support.');
     }
 }

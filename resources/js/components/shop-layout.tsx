@@ -237,7 +237,11 @@ function ShopLayoutInner({ children }: Props) {
     const [drawerTab, setDrawerTab] = useState<DrawerTab>('login');
 
     useEffect(() => {
-        if (flash?.success) toast(flash.success, 'success');
+        if (flash?.success) {
+            const msg = flash.success.toLowerCase();
+            const type = msg.includes('cart') || msg.includes('added') ? 'cart' : 'success';
+            toast(flash.success, type);
+        }
         if (flash?.error) toast(flash.error, 'error');
     }, [flash]);
 
