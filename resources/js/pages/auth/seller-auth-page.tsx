@@ -41,7 +41,10 @@ function LoginForm({ onSwitch, canResetPassword, status }: { onSwitch: () => voi
     const form = useForm({ email: '', password: '', remember: false });
     function submit(e: React.FormEvent) {
         e.preventDefault();
-        form.post('/login', { onFinish: () => form.reset('password') });
+        form.post('/login', {
+            onFinish: () => form.reset('password'),
+            onSuccess: () => { window.location.href = '/seller/register'; },
+        });
     }
     return (
         <form onSubmit={submit} className="space-y-5">
@@ -93,7 +96,18 @@ function RegisterForm({ onSwitch }: { onSwitch: () => void }) {
     }
     return (
         <form onSubmit={submit} className="space-y-5">
-            {form.errors.email && <div className="bg-red-50 border border-red-200 text-red-600 rounded-lg px-4 py-3 text-sm">{form.errors.email}</div>}
+            {form.errors.email && (
+                <div className="bg-red-50 border border-red-200 text-red-600 rounded-lg px-4 py-3 text-sm">
+                    {form.errors.email.includes('already') ? (
+                        <span>
+                            This email is already registered.{' '}
+                            <button type="button" onClick={onSwitch} className="font-semibold underline">
+                                Sign in instead
+                            </button>
+                        </span>
+                    ) : form.errors.email}
+                </div>
+            )}
 
             {/* Two-column layout for name + email */}
             <div className="grid grid-cols-2 gap-4">

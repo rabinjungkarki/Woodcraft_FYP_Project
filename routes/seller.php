@@ -6,10 +6,14 @@ use App\Http\Controllers\Seller\RegisterController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
-// Dedicated seller login page (guest only)
-Route::middleware('guest')->get('/seller/login', fn () => Inertia::render('auth/seller-auth-page', [
-    'defaultTab' => 'login',
-]))->name('seller.login');
+// Seller auth page — accessible to guests AND logged-in buyers
+Route::get('/seller/login', function () {
+    // Already logged in → send straight to seller registration
+    if (auth()->check()) {
+        return redirect()->route('seller.register');
+    }
+    return Inertia::render('auth/seller-auth-page', ['defaultTab' => 'login']);
+})->name('seller.login');
 
 // Seller registration (any logged-in user)
 Route::middleware(['auth', 'verified'])->group(function () {

@@ -44,7 +44,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/reviews', [ReviewController::class, 'store'])->name('reviews.store');
     Route::delete('/reviews/{review}', [ReviewController::class, 'destroy'])->name('reviews.destroy');
 
-    // Payment
+    // Payment initiate (auth required)
     Route::get('/payment/khalti/{order}', [PaymentController::class, 'khalti'])->name('payment.khalti');
-    Route::get('/payment/khalti/{order}/verify', [PaymentController::class, 'khaltiVerify'])->name('payment.khalti.verify');
 });
+
+// Payment verify — outside auth so Khalti's redirect callback always lands here
+Route::get('/payment/khalti/{order}/verify', [PaymentController::class, 'khaltiVerify'])->name('payment.khalti.verify');

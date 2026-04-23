@@ -237,11 +237,7 @@ function ShopLayoutInner({ children }: Props) {
     const [drawerTab, setDrawerTab] = useState<DrawerTab>('login');
 
     useEffect(() => {
-        if (flash?.success) {
-            const msg = flash.success.toLowerCase();
-            const type = msg.includes('cart') || msg.includes('added') ? 'cart' : 'success';
-            toast(flash.success, type);
-        }
+        if (flash?.success) toast(flash.success, 'success');
         if (flash?.error) toast(flash.error, 'error');
     }, [flash]);
 
@@ -330,6 +326,20 @@ function ShopLayoutInner({ children }: Props) {
                                         className="px-4 py-2.5 text-sm font-semibold rounded-xl transition-all border"
                                         style={{ borderColor: '#A67C52', color: '#A67C52' }}>
                                         Seller Centre
+                                    </Link>
+                                )}
+                                {auth.user.role === 'buyer' && (
+                                    <Link href="/seller/register"
+                                        className="px-4 py-2.5 text-sm font-semibold rounded-xl transition-all border"
+                                        style={{ borderColor: '#A67C52', color: '#A67C52' }}>
+                                        Become a Seller
+                                    </Link>
+                                )}
+                                {auth.user.role === 'pending_seller' && (
+                                    <Link href="/seller/register"
+                                        className="px-4 py-2.5 text-sm font-medium rounded-xl transition-all border"
+                                        style={{ borderColor: '#A67C52', color: '#A67C52' }}>
+                                        Approval Pending
                                     </Link>
                                 )}
                                 <UserDropdown name={auth.user.name} scrolled={scrolled} />

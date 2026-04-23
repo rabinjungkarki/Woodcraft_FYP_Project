@@ -51,13 +51,18 @@ class PaymentController extends Controller
 
     public function khaltiVerify(Request $request, Order $order)
     {
-        abort_if($order->user_id !== auth()->id(), 403);
+        // If authenticated, enforce ownership
+        if (auth()->check() && $order->user_id !== auth()->id()) {
+            abort(403);
+        }
 
         $pidx = $request->query('pidx');
 
         if (! $pidx) {
-            return redirect()->route('orders.show', $order->id)
-                ->with('error', 'Payment was cancelled.');
+            return Inertia::render('shop/payment-khalti', [
+                'order' => $order,
+                'error' => 'Payment was cancelled.',
+            ]);
         }
 
         $response = Http::withHeaders([
@@ -66,15 +71,19 @@ class PaymentController extends Controller
             'pidx' => $pidx,
         ]);
 
-        if ($response->successful() && $response->json('status') === 'Completed') {
+        $status = $response->json('status');
+
+        if ($response->successful() && $status === 'Completed') {
             $order->update([
                 'payment_status' => 'paid',
                 'payment_ref'    => $pidx,
                 'status'         => 'processing',
             ]);
 
-            return redirect()->route('orders.show', $order->id)
-                ->with('success', 'Payment successful! Your order is being processed. 🎉');
+            return Inertia::render('shop/payment-khalti', [
+                'order'   => $order->fresh(),
+                'success' => true,
+            ]);
         }
 
         Log::error('Khalti verification failed', [
@@ -84,7 +93,17 @@ class PaymentController extends Controller
             'body'     => $response->json(),
         ]);
 
-        return redirect()->route('orders.show', $order->id)
-            ->with('error', 'Payment verification failed. If money was deducted, please contact support.');
+        $msg = match($status) {
+            'Pending', 'Initiated' => 'Payment is still pending. Please complete the payment in Khalti.',
+            'Refunded'             => 'Payment was refunded.',
+            'Expired'              => 'Payment session expired. Please try again.',
+            'User canceled'        => 'Payment was cancelled.',
+            default                => 'Payment verification failed. If money was deducted, please contact support.',
+        };
+
+        return Inertia::render('shop/payment-khalti', [
+            'order' => $order,
+            'error' => $msg,
+        ]);
     }
 }

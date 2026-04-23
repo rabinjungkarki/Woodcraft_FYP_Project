@@ -47,6 +47,13 @@ export default function OrderDetail({ order }: { order: Order }) {
                     </div>
                     <div className="flex items-center gap-3">
                         <span className="text-sm px-3 py-1.5 rounded-full font-semibold" style={{ background: s.bg, color: s.color }}>{s.label}</span>
+                        {order.payment_method === 'khalti' && order.payment_status === 'unpaid' && order.status !== 'cancelled' && (
+                            <a href={`/payment/khalti/${order.id}`}
+                                className="flex items-center gap-1.5 text-sm font-semibold text-white px-3 py-1.5 rounded-xl transition-colors"
+                                style={{ background: '#5C2D91' }}>
+                                Pay with Khalti
+                            </a>
+                        )}
                         {canCancel && (
                             <button onClick={() => confirm('Cancel this order?') && cancelForm.patch(`/orders/${order.id}/cancel`)}
                                 disabled={cancelForm.processing}

@@ -1,21 +1,19 @@
 import { Head, Link } from '@inertiajs/react';
 import { useEffect } from 'react';
 import { motion } from 'motion/react';
-import { AlertCircle, ArrowLeft, RefreshCw } from 'lucide-react';
+import { AlertCircle, ArrowLeft, RefreshCw, CheckCircle2 } from 'lucide-react';
 import ShopLayout from '@/components/shop-layout';
 
-interface Order { id: number; total: number; }
+interface Order { id: number; total: number; status: string; payment_status: string; }
 
-export default function PaymentKhalti({ order, error }: { order: Order; error?: string }) {
-    // If no error, we were redirected here unexpectedly — auto-retry after 3s
+export default function PaymentKhalti({ order, error, success }: { order: Order; error?: string; success?: boolean }) {
+    // No error and no success = unexpected landing — auto-retry
     useEffect(() => {
-        if (!error) {
-            const t = setTimeout(() => {
-                window.location.href = `/payment/khalti/${order.id}`;
-            }, 3000);
+        if (!error && !success) {
+            const t = setTimeout(() => { window.location.href = `/payment/khalti/${order.id}`; }, 3000);
             return () => clearTimeout(t);
         }
-    }, [error]);
+    }, [error, success]);
 
     return (
         <ShopLayout>
@@ -28,9 +26,34 @@ export default function PaymentKhalti({ order, error }: { order: Order; error?: 
                     className="bg-white rounded-2xl border p-8 space-y-5"
                     style={{ borderColor: '#E0D8CC', boxShadow: '0 8px 32px rgba(0,0,0,0.08)' }}
                 >
-                    {error ? (
+                    {success ? (
                         <>
-                            {/* Error state */}
+                            <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring', stiffness: 300, delay: 0.1 }}
+                                className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto bg-green-50">
+                                <CheckCircle2 className="w-8 h-8 text-green-500" />
+                            </motion.div>
+                            <div>
+                                <h1 className="text-xl font-bold text-foreground" style={{ fontFamily: "'Playfair Display', serif" }}>
+                                    Payment Successful!
+                                </h1>
+                                <p className="text-sm mt-1 text-muted-foreground">Order #{order.id}</p>
+                            </div>
+                            <p className="text-2xl font-bold" style={{ color: '#6B8F5E' }}>
+                                रू {Number(order.total).toLocaleString()}
+                            </p>
+                            <p className="text-sm text-green-700 bg-green-50 rounded-xl px-4 py-3">
+                                🎉 Your order is now being processed!
+                            </p>
+                            <Link
+                                href={`/orders/${order.id}`}
+                                className="flex items-center justify-center gap-2 w-full py-3 rounded-xl font-semibold text-sm text-white transition hover:brightness-110"
+                                style={{ background: '#6B8F5E' }}
+                            >
+                                View Order
+                            </Link>
+                        </>
+                    ) : error ? (
+                        <>
                             <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto bg-red-50">
                                 <AlertCircle className="w-8 h-8 text-red-500" />
                             </div>
@@ -63,7 +86,6 @@ export default function PaymentKhalti({ order, error }: { order: Order; error?: 
                         </>
                     ) : (
                         <>
-                            {/* Loading / redirect state */}
                             <motion.div
                                 animate={{ rotate: 360 }}
                                 transition={{ duration: 1.2, repeat: Infinity, ease: 'linear' }}
