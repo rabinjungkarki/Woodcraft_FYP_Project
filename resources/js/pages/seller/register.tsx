@@ -91,6 +91,8 @@ export default function SellerRegister({ pendingApproval = false }: { pendingApp
     const form = useForm({
         // Step 1
         shop_name: '', shop_description: '', phone: '',
+        shop_registration_number: '',
+        shop_registration_image: null as File | null,
         // Step 2
         bank_name: '', bank_account_number: '', bank_account_name: '', bank_branch: '',
         // Step 3
@@ -104,7 +106,7 @@ export default function SellerRegister({ pendingApproval = false }: { pendingApp
 
     function submit(e: React.FormEvent) {
         e.preventDefault();
-        form.post('/seller/register');
+        form.post('/seller/register', { forceFormData: true });
     }
 
     // Per-step required field check
@@ -247,6 +249,28 @@ export default function SellerRegister({ pendingApproval = false }: { pendingApp
                                                     placeholder="Tell buyers about your craft and speciality..." />
                                             </div>
 
+                                            <div>
+                                                <label className={LABEL}>Shop Registration Number <span className="text-muted-foreground font-normal">(optional)</span></label>
+                                                <input className={INPUT} value={form.data.shop_registration_number}
+                                                    onChange={e => form.setData('shop_registration_number', e.target.value)}
+                                                    placeholder="e.g. 123456/078/079" />
+                                                {form.errors.shop_registration_number && <p className="text-destructive text-xs mt-1">{form.errors.shop_registration_number}</p>}
+                                            </div>
+
+                                            <div>
+                                                <label className={LABEL}>Shop Registration Document <span className="text-muted-foreground font-normal">(optional)</span></label>
+                                                <label className="flex flex-col items-center justify-center w-full h-28 border-2 border-dashed border-border rounded-xl cursor-pointer bg-muted hover:border-primary/50 transition-colors">
+                                                    <input type="file" accept="image/*" className="hidden"
+                                                        onChange={e => form.setData('shop_registration_image', e.target.files?.[0] ?? null)} />
+                                                    {form.data.shop_registration_image ? (
+                                                        <span className="text-sm text-foreground font-medium">{(form.data.shop_registration_image as File).name}</span>
+                                                    ) : (
+                                                        <span className="text-sm text-muted-foreground">Click to upload image (JPG, PNG — max 2MB)</span>
+                                                    )}
+                                                </label>
+                                                {form.errors.shop_registration_image && <p className="text-destructive text-xs mt-1">{form.errors.shop_registration_image}</p>}
+                                            </div>
+
                                             <button type="button" disabled={!step1Valid} onClick={() => go(1)}
                                                 className="w-full h-11 bg-primary text-primary-foreground rounded-xl font-semibold flex items-center justify-center gap-2 hover:brightness-110 transition disabled:opacity-40">
                                                 Continue <ChevronRight className="w-4 h-4" />
@@ -365,6 +389,7 @@ export default function SellerRegister({ pendingApproval = false }: { pendingApp
                                                 {[
                                                     { label: 'Shop', value: form.data.shop_name },
                                                     { label: 'Phone', value: form.data.phone },
+                                                    { label: 'Reg. No.', value: form.data.shop_registration_number },
                                                     { label: 'Bank', value: form.data.bank_name },
                                                     { label: 'Account', value: form.data.bank_account_number ? `****${form.data.bank_account_number.slice(-4)}` : '' },
                                                 ].map(r => r.value && (

@@ -260,12 +260,9 @@ function ShopLayoutInner({ children }: Props) {
             <header className={`sticky top-0 left-0 right-0 z-50 border-b transition-all duration-300 ${scrolled ? 'shadow-md' : 'shadow-sm'}`} style={{ background: 'rgba(248,250,247,0.97)', borderColor: '#E5E7EB', backdropFilter: 'blur(12px)' }}>
                 <div className="max-w-7xl mx-auto px-6 h-18 flex items-center gap-6" style={{ height: '68px' }}>
                     {/* Logo */}
-                    <Link href="/" className="flex items-center gap-2.5 shrink-0">
-                        <img src="https://images.unsplash.com/photo-1493663284031-b7e3aefcae8e?w=40&h=40&fit=crop&q=80"
-                            alt="wood" className="w-8 h-8 rounded object-cover" />
-                        <span className="serif font-bold text-xl tracking-wide" style={{ color: '#2C1F14' }}>
-                            Wood Kala
-                        </span>
+                    <Link href="/" className="flex items-center shrink-0">
+                        <img src="/logo.png"
+                            alt="Wood-कला" className="h-14 w-auto object-contain" />
                     </Link>
 
                     {/* Nav links */}
